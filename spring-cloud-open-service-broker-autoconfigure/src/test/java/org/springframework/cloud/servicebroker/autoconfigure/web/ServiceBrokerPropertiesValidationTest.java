@@ -19,6 +19,8 @@ package org.springframework.cloud.servicebroker.autoconfigure.web;
 import java.util.List;
 import java.util.Map;
 
+import com.jayway.jsonpath.DocumentContext;
+import org.assertj.core.data.MapEntry;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,6 +30,8 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.cloud.servicebroker.JsonPathAssert;
+import org.springframework.cloud.servicebroker.JsonUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.PropertySource;
@@ -144,7 +148,12 @@ public class ServiceBrokerPropertiesValidationTest {
 		assertThat(catalog.getServices().get(0).getPlans().get(1).getId()).isEqualTo("plan-two-id");
 		assertThat(catalog.getServices().get(0).getPlans().get(1).getName()).isEqualTo("Plan Two");
 		assertThat(catalog.getServices().get(0).getPlans().get(1).getDescription()).isEqualTo("Description for Plan Two");
-		assertThat(catalog.getServices().get(0).getPlans().get(1).getMetadata()).containsOnly(entry("key1", "value1"), entry("key2", "value2"));
+		assertThat(catalog.getServices().get(0).getPlans().get(1).getMetadata().getExtra()).containsOnly(entry("key1", "value1"), entry("key2", "value2"));
+		assertThat(catalog.getServices().get(0).getPlans().get(1).getMetadata().getCosts()).hasSize(1);
+		assertThat(catalog.getServices().get(0).getPlans().get(1).getMetadata().getCosts().get(0).getUnit()).isEqualTo("MONTHLY");
+		assertThat(catalog.getServices().get(0).getPlans().get(1).getMetadata().getCosts().get(0).getAmount()).contains(entry("usd", 649.0));
+		assertThat(catalog.getServices().get(0).getPlans().get(1).getMetadata().getDisplayName()).isEqualTo("sample display name");
+		assertThat(catalog.getServices().get(0).getPlans().get(1).getMetadata().getBullets()).containsExactlyInAnyOrder("bullet1", "bullet2");
 		assertThat(catalog.getServices().get(0).getPlans().get(1).isBindable()).isTrue();
 		assertThat(catalog.getServices().get(0).getPlans().get(1).isFree()).isTrue();
 		assertThat(catalog.getServices().get(0).getPlans().get(1).getSchemas().getServiceInstance().getCreate().getParameters())
